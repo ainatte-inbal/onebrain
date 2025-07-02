@@ -1,19 +1,32 @@
 import { neon } from "@neondatabase/serverless"
 
-function createClient() {
-  const url = process.env.DATABASE_URL
+/**
+ * Lazily create a singleton Neon client.
+ *   – Build step never needs DATABASE_URL.
+ *   – Runtime still throws a clear error the first time a query is executed.
+ */
+function getClient() {
+  if (globalThis.__sqlClient) return globalThis.__sqlClient as ReturnType<typeof neon>
+
+  const url =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL || // fallback for Vercel’s automatic vars
+    process.env.POSTGRES_PRISMA_URL
+
   if (!url) {
-    throw new Error("DATABASE_URL environment variable is not set – define it in Vercel Project Settings or .env.local")
+    throw new Error("DATABASE_URL environment variable is not set – add it in Vercel Project Settings or .env.local")
   }
-  return neon(url)
+
+  const client = neon(url)
+  globalThis.__sqlClient = client
+  return client
 }
 
 /**
- * sql – call as await sql\`SELECT 1\`
- * The actual DB client is initialised on first use so the build step
- * never fails, but runtime still validates DATABASE_URL.
+ * sql`` tag – identical signature to a real neon client.
+ * Use exactly like:  await sql\`SELECT 1\`
  */
-export const sql = /* @__PURE__ */ createClient()
+export const sql = (...args: Parameters<ReturnType<typeof neon>>) => getClient()(...(args as any))
 
 // -----------------------------------------------------------------
 // (unchanged) Type definitions …
@@ -68,4 +81,5 @@ export interface DbHistoryEntry {
   user_id?: number
   user_name: string
   created_at: Date
+  updated_at: Date
 }
