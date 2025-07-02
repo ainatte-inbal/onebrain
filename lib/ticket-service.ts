@@ -1,5 +1,4 @@
-;/import { sql } from "@vercel/egoprsst
-";
+import { sql } from "./database"
 
 export class TicketService {
   /**
@@ -49,7 +48,9 @@ export class TicketService {
     }
   }
 
-  static async checkTablesExist(tableNames: string[]): Promise<{ success: boolean; message: string }> {
+  static async checkTablesExist(
+    tableNames: string[] = ["tickets", "comments", "ticket_history", "users", "teams"],
+  ): Promise<{ success: boolean; message: string }> {
     try {
       const placeholders = tableNames.map(() => "text").join(", ")
       const query = `
