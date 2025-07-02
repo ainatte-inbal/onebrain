@@ -63,7 +63,7 @@ export class TicketService {
           ${cleanData.issueCategory},
           ${cleanData.providerNameId}, 
           ${formData.source}, 
-          ${JSON.stringify(formData.products)},
+          ${formData.products},
           ${cleanData.caseOrigin}, 
           ${cleanData.reporterNotes},
           ${cleanData.contactEmails}, 
