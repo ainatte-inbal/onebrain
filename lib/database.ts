@@ -1,14 +1,23 @@
 import { neon } from "@neondatabase/serverless"
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is not set")
+function createClient() {
+  const url = process.env.DATABASE_URL
+  if (!url) {
+    throw new Error("DATABASE_URL environment variable is not set – define it in Vercel Project Settings or .env.local")
+  }
+  return neon(url)
 }
 
-const sql = neon(process.env.DATABASE_URL)
+/**
+ * sql – call as await sql\`SELECT 1\`
+ * The actual DB client is initialised on first use so the build step
+ * never fails, but runtime still validates DATABASE_URL.
+ */
+export const sql = /* @__PURE__ */ createClient()
 
-export { sql }
-
-// Database types
+// -----------------------------------------------------------------
+// (unchanged) Type definitions …
+// -----------------------------------------------------------------
 export interface DbTicket {
   id: number
   ticket_id: string
